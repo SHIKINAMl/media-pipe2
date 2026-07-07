@@ -37,17 +37,24 @@ def draw_hands(frame, hands, connections):
             cv2.circle(frame, (x, y), 2, (0, 255, 0), -1)
 
 
-def main():
+def run_hand_test(window_title="MediaPipe Hand Test", overlay_callback=None):
     if not MODEL_PATH.exists():
         raise FileNotFoundError(f"モデルファイルが見つかりません: {MODEL_PATH}")
 
     model_path = runtime_model_path(MODEL_PATH)
 
     latest_hands = []
+    latest_handedness_labels = []
 
     def on_result(result, _output_image, _timestamp_ms):
-        nonlocal latest_hands
+        nonlocal latest_hands, latest_handedness_labels
         latest_hands = result.hand_landmarks or []
+        latest_handedness_labels = []
+        for handedness_list in result.handedness or []:
+            if handedness_list and len(handedness_list) > 0:
+                latest_handedness_labels.append(handedness_list[0].category_name)
+            else:
+                latest_handedness_labels.append("Unknown")
 
     base_options = tasks.BaseOptions(model_asset_path=str(model_path))
     options = vision.HandLandmarkerOptions(
@@ -81,13 +88,19 @@ def main():
                     latest_hands,
                     vision.HandLandmarksConnections.HAND_CONNECTIONS,
                 )
+                if overlay_callback is not None:
+                    overlay_callback(frame, latest_hands, latest_handedness_labels)
 
-            cv2.imshow("MediaPipe Hand Test", frame)
+            cv2.imshow(window_title, frame)
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
 
     cap.release()
     cv2.destroyAllWindows()
+
+
+def main():
+    run_hand_test()
 
 
 if __name__ == "__main__":

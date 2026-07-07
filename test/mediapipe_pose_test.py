@@ -38,7 +38,7 @@ def draw_pose(frame, landmarks, connections):
         cv2.circle(frame, (x, y), 2, (0, 255, 0), -1)
 
 
-def main():
+def run_pose_test(window_title="MediaPipe Pose Test", overlay_callback=None):
     if not MODEL_PATH.exists():
         raise FileNotFoundError(f"モデルファイルが見つかりません: {MODEL_PATH}")
 
@@ -82,14 +82,20 @@ def main():
                     latest_poses[0],
                     vision.PoseLandmarksConnections.POSE_LANDMARKS,
                 )
+                if overlay_callback is not None:
+                    overlay_callback(frame, latest_poses)
 
-            cv2.imshow("MediaPipe Pose Test", frame)
+            cv2.imshow(window_title, frame)
 
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
 
     cap.release()
     cv2.destroyAllWindows()
+
+
+def main():
+    run_pose_test()
 
 
 if __name__ == "__main__":
