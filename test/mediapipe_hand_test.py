@@ -37,7 +37,7 @@ def draw_hands(frame, hands, connections):
             cv2.circle(frame, (x, y), 2, (0, 255, 0), -1)
 
 
-def run_hand_test(window_title="MediaPipe Hand Test", overlay_callback=None):
+def run_hand_test(window_title="MediaPipe Hand Test", overlay_callback=None, hand_filter=None):
     if not MODEL_PATH.exists():
         raise FileNotFoundError(f"モデルファイルが見つかりません: {MODEL_PATH}")
 
@@ -83,13 +83,14 @@ def run_hand_test(window_title="MediaPipe Hand Test", overlay_callback=None):
             landmarker.detect_async(mp_image, timestamp_ms)
 
             if latest_hands:
+                hands_to_draw = hand_filter(latest_hands) if hand_filter is not None else latest_hands
                 draw_hands(
                     frame,
-                    latest_hands,
+                    hands_to_draw,
                     vision.HandLandmarksConnections.HAND_CONNECTIONS,
                 )
                 if overlay_callback is not None:
-                    overlay_callback(frame, latest_hands, latest_handedness_labels)
+                    overlay_callback(frame, hands_to_draw, latest_handedness_labels)
 
             cv2.imshow(window_title, frame)
             if cv2.waitKey(1) & 0xFF == ord("q"):

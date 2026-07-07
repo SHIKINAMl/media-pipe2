@@ -38,7 +38,7 @@ def draw_pose(frame, landmarks, connections):
         cv2.circle(frame, (x, y), 2, (0, 255, 0), -1)
 
 
-def run_pose_test(window_title="MediaPipe Pose Test", overlay_callback=None):
+def run_pose_test(window_title="MediaPipe Pose Test", overlay_callback=None, pose_filter=None):
     if not MODEL_PATH.exists():
         raise FileNotFoundError(f"モデルファイルが見つかりません: {MODEL_PATH}")
 
@@ -77,13 +77,14 @@ def run_pose_test(window_title="MediaPipe Pose Test", overlay_callback=None):
             landmarker.detect_async(mp_image, timestamp_ms)
 
             if latest_poses:
+                poses_to_draw = pose_filter(latest_poses) if pose_filter is not None else latest_poses
                 draw_pose(
                     frame,
-                    latest_poses[0],
+                    poses_to_draw[0],
                     vision.PoseLandmarksConnections.POSE_LANDMARKS,
                 )
                 if overlay_callback is not None:
-                    overlay_callback(frame, latest_poses)
+                    overlay_callback(frame, poses_to_draw)
 
             cv2.imshow(window_title, frame)
 
