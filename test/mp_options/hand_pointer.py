@@ -9,6 +9,10 @@ from mp_options.hand_gestures import classify_open_close
 POINTER_WINDOW_TITLE = "MediaPipe Hand Pointer"
 POINTER_CANVAS_WIDTH = 1280
 POINTER_CANVAS_HEIGHT = 720
+POINTER_ACTIVE_MIN_X = 0.08
+POINTER_ACTIVE_MAX_X = 0.92
+POINTER_ACTIVE_MIN_Y = 0.05
+POINTER_ACTIVE_MAX_Y = 0.95
 
 
 def _hand_center(hand):
@@ -18,6 +22,13 @@ def _hand_center(hand):
     center_x = (wrist.x + index_mcp.x + pinky_mcp.x) / 3
     center_y = (wrist.y + index_mcp.y + pinky_mcp.y) / 3
     return center_x, center_y
+
+
+def _normalize_in_active_range(value, min_value, max_value):
+    if max_value <= min_value:
+        return max(0.0, min(1.0, value))
+    clipped = max(min_value, min(max_value, value))
+    return (clipped - min_value) / (max_value - min_value)
 
 
 def create_hand_pointer_overlay(window_size=5, window_title=POINTER_WINDOW_TITLE):
@@ -61,9 +72,11 @@ def create_hand_pointer_overlay(window_size=5, window_title=POINTER_WINDOW_TITLE
         smoothed_state = Counter(votes).most_common(1)[0][0] if votes else "OTHER"
 
         center_x, center_y = _hand_center(hand)
+        norm_x = _normalize_in_active_range(center_x, POINTER_ACTIVE_MIN_X, POINTER_ACTIVE_MAX_X)
+        norm_y = _normalize_in_active_range(center_y, POINTER_ACTIVE_MIN_Y, POINTER_ACTIVE_MAX_Y)
         # Invert both horizontal and vertical directions.
-        raw_x = max(0, min(POINTER_CANVAS_WIDTH - 1, int((1.0 - center_x) * POINTER_CANVAS_WIDTH)))
-        raw_y = max(0, min(POINTER_CANVAS_HEIGHT - 1, int((1.0 - center_y) * POINTER_CANVAS_HEIGHT)))
+        raw_x = max(0, min(POINTER_CANVAS_WIDTH - 1, int((1.0 - norm_x) * (POINTER_CANVAS_WIDTH - 1))))
+        raw_y = max(0, min(POINTER_CANVAS_HEIGHT - 1, int((1.0 - norm_y) * (POINTER_CANVAS_HEIGHT - 1))))
 
         point_history = point_histories.setdefault(0, deque(maxlen=window_size))
         point_history.append((raw_x, raw_y))

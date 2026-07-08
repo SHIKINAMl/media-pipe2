@@ -4,7 +4,8 @@ from collections import Counter, deque
 import cv2
 
 
-EXTENSION_THRESHOLD = 1.02
+EXTENSION_THRESHOLD = 1.00
+THUMB_INDEX_MIN_ANGLE = 25.0
 
 
 def joint_angle(a, b, c):
@@ -20,6 +21,28 @@ def joint_angle(a, b, c):
 
     dot = ab_x * cb_x + ab_y * cb_y
     cosine = max(-1.0, min(1.0, dot / (ab_len * cb_len)))
+    return math.degrees(math.acos(cosine))
+
+
+def _vector(a, b):
+    return (
+        b.x - a.x,
+        b.y - a.y,
+        getattr(b, "z", 0.0) - getattr(a, "z", 0.0),
+    )
+
+
+def _vector_len(v):
+    return math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2])
+
+
+def vector_angle_deg(v1, v2):
+    len1 = _vector_len(v1)
+    len2 = _vector_len(v2)
+    if len1 == 0.0 or len2 == 0.0:
+        return 0.0
+    dot = v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2]
+    cosine = max(-1.0, min(1.0, dot / (len1 * len2)))
     return math.degrees(math.acos(cosine))
 
 
@@ -44,17 +67,22 @@ def is_thumb_extended(hand, _handedness_label=None, extension_threshold=EXTENSIO
     angle_mcp = joint_angle(cmc, mcp, ip)
     angle_ip = joint_angle(mcp, ip, tip)
 
+    # Geometric gate: compare thumb direction with index-base direction in 3D.
+    thumb_dir = _vector(mcp, tip)
+    index_dir = _vector(index_mcp, hand[6])
+    thumb_index_angle = vector_angle_deg(thumb_dir, index_dir)
+
+    # Distance gate: thumb tip should be farther from palm center than IP joint.
     palm_center_x = (wrist.x + index_mcp.x + pinky_mcp.x) / 3
     palm_center_y = (wrist.y + index_mcp.y + pinky_mcp.y) / 3
-
     tip_to_palm2 = (tip.x - palm_center_x) ** 2 + (tip.y - palm_center_y) ** 2
     ip_to_palm2 = (ip.x - palm_center_x) ** 2 + (ip.y - palm_center_y) ** 2
 
-    return (
-        angle_mcp > 145
-        and angle_ip > 150
-        and tip_to_palm2 > ip_to_palm2 * extension_threshold
-    )
+    joints_open = angle_mcp > 145 and angle_ip > 150
+    geometry_open = thumb_index_angle > THUMB_INDEX_MIN_ANGLE
+    distance_open = tip_to_palm2 > ip_to_palm2 * extension_threshold
+
+    return joints_open and geometry_open and distance_open
 
 
 def classify_gesture(hand, handedness_label):
