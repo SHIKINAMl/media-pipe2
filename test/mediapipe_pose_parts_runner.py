@@ -31,6 +31,12 @@ def parse_args():
         metavar="WINDOW",
         help="Enable landmark position smoothing with optional window size.",
     )
+    parser.add_argument(
+        "-a",
+        "--avatar",
+        action="store_true",
+        help="Launch avatar window that draws pose points and bones.",
+    )
     return parser.parse_args()
 
 
@@ -48,6 +54,7 @@ def main():
     run_pose_detection(
         window_title=title,
         pose_filter=pose_filter,
+        enable_avatar_window=args.avatar,
     )
 
 

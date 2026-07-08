@@ -8,6 +8,8 @@ import mediapipe as mp
 from mediapipe.tasks import python as tasks
 from mediapipe.tasks.python import vision
 
+from mp_options.pose_avatar import PoseAvatarWindow
+
 
 POSE_MODEL_PATH = Path(__file__).resolve().parent.parent.parent / "models" / "pose" / "pose_landmarker_heavy.task"
 
@@ -43,6 +45,10 @@ def run_pose_detection(
     overlay_callback=None,
     display_width=1280,
     display_height=720,
+    enable_avatar_window=False,
+    avatar_window_title="Pose Avatar",
+    avatar_width=640,
+    avatar_height=360,
 ):
     if not POSE_MODEL_PATH.exists():
         raise FileNotFoundError(f"Model file was not found: {POSE_MODEL_PATH}")
@@ -70,6 +76,13 @@ def run_pose_detection(
 
     cv2.namedWindow(window_title, cv2.WINDOW_NORMAL)
     cv2.resizeWindow(window_title, display_width, display_height)
+    avatar_window = None
+    if enable_avatar_window:
+        avatar_window = PoseAvatarWindow(
+            window_title=avatar_window_title,
+            width=avatar_width,
+            height=avatar_height,
+        )
 
     with vision.PoseLandmarker.create_from_options(options) as landmarker:
         while True:
@@ -90,6 +103,11 @@ def run_pose_detection(
                     poses_to_draw[0],
                     vision.PoseLandmarksConnections.POSE_LANDMARKS,
                 )
+                if avatar_window is not None:
+                    avatar_window.render(
+                        poses_to_draw[0],
+                        vision.PoseLandmarksConnections.POSE_LANDMARKS,
+                    )
                 if overlay_callback is not None:
                     overlay_callback(frame, poses_to_draw)
 

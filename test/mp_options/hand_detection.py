@@ -92,7 +92,13 @@ def run_hand_detection(
             landmarker.detect_async(mp_image, timestamp_ms)
 
             if latest_hands:
-                hands_to_draw = hand_filter(latest_hands) if hand_filter is not None else latest_hands
+                if hand_filter is not None:
+                    try:
+                        hands_to_draw = hand_filter(latest_hands, latest_handedness_labels)
+                    except TypeError:
+                        hands_to_draw = hand_filter(latest_hands)
+                else:
+                    hands_to_draw = latest_hands
                 draw_hands(
                     frame,
                     hands_to_draw,

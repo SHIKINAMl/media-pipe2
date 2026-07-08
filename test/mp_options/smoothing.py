@@ -2,17 +2,36 @@ from collections import deque
 from types import SimpleNamespace
 
 
+def _snapshot_landmarks(landmarks):
+    return [
+        SimpleNamespace(
+            x=float(lm.x),
+            y=float(lm.y),
+            z=float(getattr(lm, "z", 0.0)),
+        )
+        for lm in landmarks
+    ]
+
+
 def create_multi_hand_landmark_smoother(window_size=5):
     histories = {}
 
-    def smooth_hands(hands):
-        active_indices = set()
+    def smooth_hands(hands, handedness_labels=None):
+        active_keys = set()
         smoothed_hands = []
+        label_counts = {}
 
         for i, hand in enumerate(hands):
-            active_indices.add(i)
-            history = histories.setdefault(i, deque(maxlen=window_size))
-            history.append(hand)
+            track_key = i
+            if handedness_labels is not None and i < len(handedness_labels):
+                label = handedness_labels[i] or "Unknown"
+                rank = label_counts.get(label, 0)
+                label_counts[label] = rank + 1
+                track_key = f"{label}:{rank}"
+
+            active_keys.add(track_key)
+            history = histories.setdefault(track_key, deque(maxlen=window_size))
+            history.append(_snapshot_landmarks(hand))
 
             landmark_count = len(hand)
             count = len(history)
@@ -32,9 +51,9 @@ def create_multi_hand_landmark_smoother(window_size=5):
 
             smoothed_hands.append(smoothed_hand)
 
-        for i in list(histories.keys()):
-            if i not in active_indices:
-                del histories[i]
+        for key in list(histories.keys()):
+            if key not in active_keys:
+                del histories[key]
 
         return smoothed_hands
 
@@ -50,7 +69,7 @@ def create_single_pose_landmark_smoother(window_size=5):
             return poses
 
         current = poses[0]
-        history.append(current)
+        history.append(_snapshot_landmarks(current))
 
         count = len(history)
         landmark_count = len(current)
