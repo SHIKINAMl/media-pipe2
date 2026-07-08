@@ -6,6 +6,7 @@ from mp_options.hand_gestures import (
     classify_open_close,
     create_hand_label_overlay,
 )
+from mp_options.hand_pointer import create_hand_pointer_overlay
 from mp_options.smoothing import create_multi_hand_landmark_smoother
 
 
@@ -36,6 +37,9 @@ def build_pipeline(
             vote_labels=("OPEN", "CLOSE"),
         )
         title_options.append(f"OpenClose{label_window}")
+    elif gesture_mode == "pointer":
+        overlay = create_hand_pointer_overlay(window_size=label_window)
+        title_options.append(f"Pointer{label_window}")
     else:
         title_options.append("DetectOnly")
 
@@ -59,12 +63,11 @@ def parse_args():
     parser.add_argument(
         "-g",
         "--gesture",
-        nargs=2,
+        nargs="+",
         type=int,
-        choices=[0, 1],
         default=None,
         metavar=("MODE", "WINDOW"),
-        help="Enable overlay mode with mode and label smoothing window: 0=open/close, 1=gesture.",
+        help="Enable overlay mode with mode and optional label smoothing window: 0=open/close, 1=gesture, 2=pointer.",
     )
     return parser.parse_args()
 
@@ -78,8 +81,17 @@ def main():
     gesture_mode = "none"
     label_window = 5
     if args.gesture is not None:
-        gesture_mode = "gesture" if args.gesture[0] == 1 else "open-close"
-        label_window = args.gesture[1]
+        if len(args.gesture) not in (1, 2):
+            raise SystemExit("-g expects one or two integers: MODE [WINDOW]")
+
+        if args.gesture[0] == 1:
+            gesture_mode = "gesture"
+        elif args.gesture[0] == 2:
+            gesture_mode = "pointer"
+        else:
+            gesture_mode = "open-close"
+        if len(args.gesture) == 2:
+            label_window = args.gesture[1]
 
     hand_filter, overlay, title = build_pipeline(
         enable_position_smoothing=enable_position_smoothing,
