@@ -9,7 +9,7 @@ from mediapipe.tasks import python as tasks
 from mediapipe.tasks.python import vision
 
 
-MODEL_PATH = Path(__file__).resolve().parent.parent / "models" / "hand" / "hand_landmarker.task"
+HAND_MODEL_PATH = Path(__file__).resolve().parent.parent.parent / "models" / "hand" / "hand_landmarker.task"
 
 
 def runtime_model_path(path: Path) -> Path:
@@ -37,12 +37,18 @@ def draw_hands(frame, hands, connections):
             cv2.circle(frame, (x, y), 2, (0, 255, 0), -1)
 
 
-def run_hand_test(window_title="MediaPipe Hand Test", overlay_callback=None, hand_filter=None):
-    if not MODEL_PATH.exists():
-        raise FileNotFoundError(f"モデルファイルが見つかりません: {MODEL_PATH}")
+def run_hand_detection(
+    window_title="MediaPipe Hand Parts Runner",
+    hand_filter=None,
+    overlay_callback=None,
+    num_hands=2,
+    display_width=1280,
+    display_height=720,
+):
+    if not HAND_MODEL_PATH.exists():
+        raise FileNotFoundError(f"Model file was not found: {HAND_MODEL_PATH}")
 
-    model_path = runtime_model_path(MODEL_PATH)
-
+    model_path = runtime_model_path(HAND_MODEL_PATH)
     latest_hands = []
     latest_handedness_labels = []
 
@@ -60,15 +66,18 @@ def run_hand_test(window_title="MediaPipe Hand Test", overlay_callback=None, han
     options = vision.HandLandmarkerOptions(
         base_options=base_options,
         running_mode=vision.RunningMode.LIVE_STREAM,
-        num_hands=2,
+        num_hands=num_hands,
         result_callback=on_result,
     )
 
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
-        raise RuntimeError("Webカメラを開けませんでした。")
+        raise RuntimeError("Could not open a web camera.")
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 360)
+
+    cv2.namedWindow(window_title, cv2.WINDOW_NORMAL)
+    cv2.resizeWindow(window_title, display_width, display_height)
 
     with vision.HandLandmarker.create_from_options(options) as landmarker:
         while True:
@@ -98,11 +107,3 @@ def run_hand_test(window_title="MediaPipe Hand Test", overlay_callback=None, han
 
     cap.release()
     cv2.destroyAllWindows()
-
-
-def main():
-    run_hand_test()
-
-
-if __name__ == "__main__":
-    main()

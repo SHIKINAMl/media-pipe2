@@ -4,13 +4,12 @@ import time
 from pathlib import Path
 
 import cv2
-
 import mediapipe as mp
 from mediapipe.tasks import python as tasks
 from mediapipe.tasks.python import vision
 
 
-MODEL_PATH = Path(__file__).resolve().parent.parent / "models" / "pose" / "pose_landmarker_heavy.task"
+POSE_MODEL_PATH = Path(__file__).resolve().parent.parent.parent / "models" / "pose" / "pose_landmarker_heavy.task"
 
 
 def runtime_model_path(path: Path) -> Path:
@@ -26,29 +25,34 @@ def runtime_model_path(path: Path) -> Path:
 def draw_pose(frame, landmarks, connections):
     h, w = frame.shape[:2]
 
-    for c in connections:
-        p1 = landmarks[c.start]
-        p2 = landmarks[c.end]
+    for connection in connections:
+        p1 = landmarks[connection.start]
+        p2 = landmarks[connection.end]
         x1, y1 = int(p1.x * w), int(p1.y * h)
         x2, y2 = int(p2.x * w), int(p2.y * h)
         cv2.line(frame, (x1, y1), (x2, y2), (255, 200, 0), 1)
 
-    for lm in landmarks:
-        x, y = int(lm.x * w), int(lm.y * h)
+    for landmark in landmarks:
+        x, y = int(landmark.x * w), int(landmark.y * h)
         cv2.circle(frame, (x, y), 2, (0, 255, 0), -1)
 
 
-def run_pose_test(window_title="MediaPipe Pose Test", overlay_callback=None, pose_filter=None):
-    if not MODEL_PATH.exists():
-        raise FileNotFoundError(f"モデルファイルが見つかりません: {MODEL_PATH}")
+def run_pose_detection(
+    window_title="MediaPipe Pose Runner",
+    pose_filter=None,
+    overlay_callback=None,
+    display_width=1280,
+    display_height=720,
+):
+    if not POSE_MODEL_PATH.exists():
+        raise FileNotFoundError(f"Model file was not found: {POSE_MODEL_PATH}")
 
+    model_path = runtime_model_path(POSE_MODEL_PATH)
     latest_poses = []
 
     def on_result(result, _output_image, _timestamp_ms):
         nonlocal latest_poses
         latest_poses = result.pose_landmarks or []
-
-    model_path = runtime_model_path(MODEL_PATH)
 
     base_options = tasks.BaseOptions(model_asset_path=str(model_path))
     options = vision.PoseLandmarkerOptions(
@@ -60,9 +64,12 @@ def run_pose_test(window_title="MediaPipe Pose Test", overlay_callback=None, pos
 
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
-        raise RuntimeError("Webカメラを開けませんでした。")
+        raise RuntimeError("Could not open a web camera.")
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 360)
+
+    cv2.namedWindow(window_title, cv2.WINDOW_NORMAL)
+    cv2.resizeWindow(window_title, display_width, display_height)
 
     with vision.PoseLandmarker.create_from_options(options) as landmarker:
         while True:
@@ -87,17 +94,8 @@ def run_pose_test(window_title="MediaPipe Pose Test", overlay_callback=None, pos
                     overlay_callback(frame, poses_to_draw)
 
             cv2.imshow(window_title, frame)
-
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
 
     cap.release()
     cv2.destroyAllWindows()
-
-
-def main():
-    run_pose_test()
-
-
-if __name__ == "__main__":
-    main()

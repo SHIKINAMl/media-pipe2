@@ -3,5 +3,8 @@ test.py
 
 .venv
 
-models
-ideas
+**/*.md
+!README.md
+
+models/**
+ideas/**
