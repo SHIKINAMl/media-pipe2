@@ -5,6 +5,22 @@ MediaPipe を使ったモーションキャプチャゲーム
 カメラの前に立つだけで遊べる 2 種類のゲーム（ポーズ ゲーム / リズム ゲーム）を収録している。
 メニュー操作もゲームも、すべて体の動きで行う。
 
+## 配布版で遊ぶ
+
+[Releases](https://github.com/SHIKINAMl/media-pipe2/releases) から `media-pipe2-<バージョン>.zip` をダウンロードして展開する。ゲームに必要なコードとモデルが入っている。
+
+1. Python をインストールしておく（`python` コマンドが使える状態にする）
+2. `setup.bat` を実行する（初回のみ。`.venv` の作成と必要なパッケージのインストール）
+3. `run.bat` を実行するとゲームが起動する
+
+Web カメラが必要。
+
+配布用の zip は次のコマンドで作成できる（`dist/` に出力される）:
+
+```powershell
+.\.venv\Scripts\python.exe package_release.py v0.1.0-beta
+```
+
 ## セットアップ
 
 このワークスペースでは `.venv` を使用

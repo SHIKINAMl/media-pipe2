@@ -9,4 +9,5 @@ test.py
 models/**
 ideas/**
 logs/
+dist/
 games/ranking.tmp
