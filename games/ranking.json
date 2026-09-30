@@ -1,0 +1,104 @@
+[
+  {
+    "game_id": "GAME_A",
+    "difficulty": "easy",
+    "score": 5726,
+    "timestamp": "2026-09-29T18:04:10"
+  },
+  {
+    "game_id": "GAME_A",
+    "difficulty": "easy",
+    "score": 4073,
+    "timestamp": "2026-09-30T13:55:14"
+  },
+  {
+    "game_id": "GAME_B",
+    "difficulty": "easy",
+    "score": 3325,
+    "timestamp": "2026-09-30T13:56:08"
+  },
+  {
+    "game_id": "GAME_B",
+    "difficulty": "easy",
+    "score": 2640,
+    "timestamp": "2026-09-29T18:06:25"
+  },
+  {
+    "game_id": "GAME_B",
+    "difficulty": "normal",
+    "score": 2445,
+    "timestamp": "2026-09-30T14:05:52"
+  },
+  {
+    "game_id": "GAME_B",
+    "difficulty": "easy",
+    "score": 1635,
+    "timestamp": "2026-09-29T17:54:56"
+  },
+  {
+    "game_id": "GAME_B",
+    "difficulty": "easy",
+    "score": 1275,
+    "timestamp": "2026-09-29T18:05:31"
+  },
+  {
+    "game_id": "GAME_B",
+    "difficulty": "hard",
+    "score": 715,
+    "timestamp": "2026-09-30T13:54:28"
+  },
+  {
+    "game_id": "GAME_B",
+    "difficulty": "unknown",
+    "score": 210,
+    "timestamp": "2026-07-27T19:02:34"
+  },
+  {
+    "game_id": "GAME_A",
+    "difficulty": "easy",
+    "score": 206,
+    "timestamp": "2026-09-29T17:51:32"
+  },
+  {
+    "game_id": "GAME_B",
+    "difficulty": "unknown",
+    "score": 120,
+    "timestamp": "2026-07-27T19:02:58"
+  },
+  {
+    "game_id": "GAME_A",
+    "difficulty": "easy",
+    "score": 100,
+    "timestamp": "2026-07-27T19:16:02"
+  },
+  {
+    "game_id": "GAME_B",
+    "difficulty": "hard",
+    "score": 0,
+    "timestamp": "2026-09-29T17:47:51"
+  },
+  {
+    "game_id": "GAME_B",
+    "difficulty": "hard",
+    "score": 0,
+    "timestamp": "2026-09-29T17:59:57"
+  },
+  {
+    "game_id": "GAME_A",
+    "difficulty": "normal",
+    "score": 0,
+    "timestamp": "2026-09-29T18:04:44"
+  },
+  {
+    "game_id": "GAME_A",
+    "difficulty": "normal",
+    "score": 0,
+    "timestamp": "2026-09-30T14:05:16"
+  },
+  {
+    "game_id": "GAME_B",
+    "difficulty": "normal",
+    "score": 0,
+    "timestamp": "2026-09-30T14:07:05"
+  }
+]

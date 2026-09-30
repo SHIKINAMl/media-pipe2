@@ -8,3 +8,5 @@ test.py
 
 models/**
 ideas/**
+logs/
+games/ranking.tmp
