@@ -35,7 +35,12 @@ def build(version: str) -> Path:
     target = DIST_DIR / f"{name}.zip"
     with zipfile.ZipFile(target, "w", zipfile.ZIP_DEFLATED) as archive:
         for path in release_files():
-            archive.write(path, f"{name}/{path.relative_to(ROOT_DIR).as_posix()}")
+            arcname = f"{name}/{path.relative_to(ROOT_DIR).as_posix()}"
+            if path.suffix == ".bat":
+                # cmd.exe needs CRLF line endings for labels to work.
+                archive.writestr(arcname, b"\r\n".join(path.read_bytes().splitlines()) + b"\r\n")
+            else:
+                archive.write(path, arcname)
         # Ship an empty ranking instead of the local play records.
         archive.writestr(f"{name}/{EMPTY_RANKING}", "[]")
     return target
